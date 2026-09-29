@@ -1,4 +1,4 @@
 package com.richfield.smartpantrymanager;
 
-public class PantryAdapter {
+public class RecipeRepository {
 }
