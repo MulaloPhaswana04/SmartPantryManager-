@@ -1,117 +1,102 @@
 package com.richfield.smartpantrymanager;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    EditText etName, etQty, etExpiry;
-    Button btnAdd, btnRecipes, btnSettings;
-    RecyclerView recyclerView;
-    DatabaseHelper dbHelper;
-    PantryAdapter adapter;
-    ArrayList<PantryItem> list;
-    PantryItem editingItem = null;
+    private RecyclerView recyclerPantry;
+    private FloatingActionButton fabAdd;
+    private DatabaseHelper db;
+    private List<PantryItem> pantryList;
+    private PantryAdapter adapter;
+    private Button btnSuggested, btnPantry;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        etName = findViewById(R.id.etName);
-        etQty = findViewById(R.id.etQty);
-        etExpiry = findViewById(R.id.etExpiry);
-        btnAdd = findViewById(R.id.btnAdd);
-        btnRecipes = findViewById(R.id.btnRecipes);
-        btnSettings = findViewById(R.id.btnSettings);
-        recyclerView = findViewById(R.id.recyclerView);
+        recyclerPantry = findViewById(R.id.recyclerPantry);
+        fabAdd = findViewById(R.id.fabAdd);
+        btnSuggested = findViewById(R.id.btnSuggested);
+        btnPantry = findViewById(R.id.btnPantry);
+        db = new DatabaseHelper(this);
 
-        dbHelper = new DatabaseHelper(this);
-        list = dbHelper.getAllItems();
+        recyclerPantry.setLayoutManager(new LinearLayoutManager(this));
+        loadPantry();
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new PantryAdapter(list, new PantryAdapter.OnItemActionListener() {
-            @Override
-            public void onEdit(PantryItem item) {
-                editingItem = item;
-                etName.setText(item.getName());
-                etQty.setText(String.valueOf(item.getQuantity()));
-                etExpiry.setText(item.getExpiryDate());
-                btnAdd.setText("Update");
-                Toast.makeText(MainActivity.this, "Editing: " + item.getName(), Toast.LENGTH_SHORT).show();
-            }
-            @Override
-            public void onDelete(PantryItem item) {
-                dbHelper.deleteItem(item.getId());
-                refreshList();
-                Toast.makeText(MainActivity.this, "Deleted: " + item.getName(), Toast.LENGTH_SHORT).show();
-            }
+        fabAdd.setOnClickListener(v -> showAddDialog(null));
+
+        btnSuggested.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, SuggestedRecipesActivity.class));
         });
-        recyclerView.setAdapter(adapter);
 
-        btnAdd.setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
-            String qtyStr = etQty.getText().toString().trim();
-            String expiry = etExpiry.getText().toString().trim();
+        btnPantry.setOnClickListener(v -> {
+            loadPantry();
+        });
+    }
 
-            if (name.isEmpty()) {
-                etName.setError("Name required"); return;
-            }
-            if (qtyStr.isEmpty()) {
-                etQty.setError("Qty required"); return;
-            }
-            if (expiry.isEmpty()) {
-                etExpiry.setError("Expiry required YYYY-MM-DD"); return;
-            }
-            if (!expiry.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                etExpiry.setError("Use YYYY-MM-DD"); return;
-            }
+    private void loadPantry() {
+        pantryList = db.getAllItems();
+        adapter = new PantryAdapter(this, pantryList,
+                item -> showAddDialog(item),
+                id -> { db.deleteItem(id); loadPantry(); Toast.makeText(this,"Deleted",Toast.LENGTH_SHORT).show(); }
+        );
+        recyclerPantry.setAdapter(adapter);
+    }
 
-            int qty;
-            try {
-                qty = Integer.parseInt(qtyStr);
-                if (qty <= 0) { etQty.setError("Qty must be >0"); return; }
-            } catch (NumberFormatException e) {
-                etQty.setError("Must be a number"); return;
-            }
+    private void showAddDialog(PantryItem editItem) {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_item, null);
+        EditText edtName = view.findViewById(R.id.edtName);
+        EditText edtQuantity = view.findViewById(R.id.edtQuantity);
+        EditText edtUnit = view.findViewById(R.id.edtUnit);
+        EditText edtExpiry = view.findViewById(R.id.edtExpiry);
+        Button btnSave = view.findViewById(R.id.btnSave);
 
-            if (editingItem != null) {
-                editingItem.setName(name);
-                editingItem.setQuantity(qty);
-                editingItem.setExpiryDate(expiry);
-                dbHelper.updateItem(editingItem);
-                editingItem = null;
-                btnAdd.setText("Add Item");
-                Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
+        if (editItem != null) {
+            edtName.setText(editItem.getName());
+            edtQuantity.setText(editItem.getQuantity());
+            edtUnit.setText(editItem.getUnit());
+            edtExpiry.setText(editItem.getExpiryDate());
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(view).create();
+        dialog.show();
+
+        btnSave.setOnClickListener(v -> {
+            String name = edtName.getText().toString().trim();
+            String qty = edtQuantity.getText().toString().trim();
+            String unit = edtUnit.getText().toString().trim();
+            String expiry = edtExpiry.getText().toString().trim();
+
+            if (name.isEmpty()) { edtName.setError("Required"); return; }
+            if (qty.isEmpty()) { edtQuantity.setError("Required"); return; }
+
+            if (editItem == null) {
+                db.addItem(new PantryItem(name, qty, unit, expiry));
+                Toast.makeText(this,"Added: "+name,Toast.LENGTH_SHORT).show();
             } else {
-                PantryItem item = new PantryItem(0, name, qty, "pcs", expiry);
-                dbHelper.addItem(item);
-                Toast.makeText(this, name + " added", Toast.LENGTH_SHORT).show();
+                editItem.setName(name);
+                editItem.setQuantity(qty);
+                editItem.setUnit(unit);
+                editItem.setExpiryDate(expiry);
+                db.updateItem(editItem);
+                Toast.makeText(this,"Updated",Toast.LENGTH_SHORT).show();
             }
-
-            clearFields();
-            refreshList();
+            dialog.dismiss();
+            loadPantry();
         });
-
-        btnRecipes.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, RecipeActivity.class)));
-        btnSettings.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
-    }
-
-    private void refreshList() {
-        list.clear();
-        list.addAll(dbHelper.getAllItems());
-        adapter.notifyDataSetChanged();
-    }
-
-    private void clearFields() {
-        etName.setText(""); etQty.setText(""); etExpiry.setText("");
-        etName.requestFocus();
     }
 }

@@ -6,26 +6,28 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DB_NAME = "SmartPantry.db";
-    private static final int DB_VERSION = 2; // bumped to 2
+    private static final String DB_NAME = "smart_pantry.db";
+    private static final int DB_VERSION = 3; // bumped to add unit column
 
-    // Pantry Table
-    private static final String TABLE_PANTRY = "pantry_items";
+    private static final String TABLE_PANTRY = "pantry";
     private static final String COL_ID = "id";
     private static final String COL_NAME = "name";
-    private static final String COL_QTY = "qty";
+    private static final String COL_QUANTITY = "quantity";
     private static final String COL_UNIT = "unit";
     private static final String COL_EXPIRY = "expiry";
 
-    // Recipe Table - REQUIRED
     private static final String TABLE_RECIPES = "recipes";
-    private static final String R_COL_ID = "id";
-    private static final String R_COL_NAME = "name";
-    private static final String R_COL_INGREDIENTS = "ingredients";
-    private static final String R_COL_STEPS = "steps";
+    private static final String COL_R_ID = "rid";
+    private static final String COL_R_NAME = "rname";
+    private static final String COL_R_INGREDIENTS = "ingredients";
+    private static final String COL_R_METHOD = "method";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -33,19 +35,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createPantry = "CREATE TABLE " + TABLE_PANTRY + " (" +
-                COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_NAME + " TEXT, " + COL_QTY + " INTEGER, " +
-                COL_UNIT + " TEXT, " + COL_EXPIRY + " TEXT)";
-        db.execSQL(createPantry);
-
-        String createRecipes = "CREATE TABLE " + TABLE_RECIPES + " (" +
-                R_COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                R_COL_NAME + " TEXT, " + R_COL_INGREDIENTS + " TEXT, " +
-                R_COL_STEPS + " TEXT)";
-        db.execSQL(createRecipes);
-
-        seedRecipes(db); // Pre-load 20 recipes
+        db.execSQL("CREATE TABLE " + TABLE_PANTRY + " (" + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + COL_NAME + " TEXT," + COL_QUANTITY + " TEXT," + COL_UNIT + " TEXT," + COL_EXPIRY + " TEXT)");
+        db.execSQL("CREATE TABLE " + TABLE_RECIPES + " (" + COL_R_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + COL_R_NAME + " TEXT," + COL_R_INGREDIENTS + " TEXT," + COL_R_METHOD + " TEXT)");
+        seedRecipes(db);
     }
 
     @Override
@@ -55,120 +47,123 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    private void seedRecipes(SQLiteDatabase db) {
-        addRecipeSeed(db, "Tomato Pasta", "tomatoes, pasta, onion, garlic, salt", "1. Boil pasta. 2. Fry onion & garlic. 3. Add tomatoes & salt. 4. Mix with pasta.");
-        addRecipeSeed(db, "Fried Eggs", "eggs, salt, oil", "1. Heat oil. 2. Crack eggs. 3. Add salt. 4. Fry.");
-        addRecipeSeed(db, "Maize Meal Porridge", "maize meal, water, salt", "1. Boil water. 2. Add salt. 3. Stir in maize meal. 4. Cook until thick.");
-        addRecipeSeed(db, "Rice and Beans", "rice, beans, water, salt, oil", "1. Boil beans. 2. Cook rice. 3. Mix with oil and salt.");
-        addRecipeSeed(db, "Peanut Butter Sandwich", "bread, peanut butter", "1. Spread peanut butter on bread. 2. Close sandwich.");
-        addRecipeSeed(db, "Tomato and Onion Salad", "tomatoes, onion, salt, oil", "1. Chop tomatoes and onion. 2. Mix with oil and salt.");
-        addRecipeSeed(db, "Boiled Eggs", "eggs, water, salt", "1. Boil water. 2. Add eggs. 3. Cook 10 mins.");
-        addRecipeSeed(db, "Garlic Bread", "bread, garlic, butter", "1. Mix garlic with butter. 2. Spread on bread. 3. Toast.");
-        addRecipeSeed(db, "Simple Omelette", "eggs, onion, tomatoes, salt, oil", "1. Chop veg. 2. Beat eggs. 3. Fry veg. 4. Add eggs.");
-        addRecipeSeed(db, "Rice Porridge", "rice, water, salt, milk", "1. Boil rice in water. 2. Add milk and salt. 3. Cook until soft.");
-        addRecipeSeed(db, "Beans Stew", "beans, tomatoes, onion, oil, salt", "1. Boil beans. 2. Fry onion. 3. Add tomatoes. 4. Mix.");
-        addRecipeSeed(db, "Pasta with Oil", "pasta, oil, salt, garlic", "1. Boil pasta. 2. Fry garlic in oil. 3. Mix.");
-        addRecipeSeed(db, "Tomato Soup", "tomatoes, onion, water, salt", "1. Boil tomatoes and onion. 2. Blend. 3. Add salt.");
-        addRecipeSeed(db, "Sugar Porridge", "maize meal, sugar, water", "1. Boil water. 2. Add maize meal. 3. Add sugar.");
-        addRecipeSeed(db, "Bread and Eggs", "bread, eggs, oil, salt", "1. Fry eggs. 2. Toast bread. 3. Serve together.");
-        addRecipeSeed(db, "Onion Fried Rice", "rice, onion, oil, salt, water", "1. Cook rice. 2. Fry onion in oil. 3. Mix.");
-        addRecipeSeed(db, "Boiled Maize Meal with Tomato", "maize meal, tomatoes, onion, salt", "1. Cook maize meal. 2. Make tomato relish. 3. Serve.");
-        addRecipeSeed(db, "Garlic Rice", "rice, garlic, oil, salt, water", "1. Fry garlic in oil. 2. Add rice and water. 3. Add salt and cook.");
-        addRecipeSeed(db, "Milk Bread", "bread, milk, sugar", "1. Warm milk. 2. Add sugar. 3. Dip bread or pour over.");
-        addRecipeSeed(db, "Salted Tomatoes", "tomatoes, salt", "1. Slice tomatoes. 2. Add salt. Ready.");
-    }
-
-    private void addRecipeSeed(SQLiteDatabase db, String name, String ingredients, String steps) {
-        ContentValues cv = new ContentValues();
-        cv.put(R_COL_NAME, name);
-        cv.put(R_COL_INGREDIENTS, ingredients);
-        cv.put(R_COL_STEPS, steps);
-        db.insert(TABLE_RECIPES, null, cv);
-    }
-
-    // --- PANTRY CRUD ---
-    public long addItem(PantryItem item) {
+    public void addItem(PantryItem item) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COL_NAME, item.getName().toLowerCase().trim());
-        cv.put(COL_QTY, item.getQuantity());
+        cv.put(COL_QUANTITY, item.getQuantity());
         cv.put(COL_UNIT, item.getUnit());
         cv.put(COL_EXPIRY, item.getExpiryDate());
-        long result = db.insert(TABLE_PANTRY, null, cv);
+        db.insert(TABLE_PANTRY, null, cv);
         db.close();
-        return result;
+    }
+
+    public List<PantryItem> getAllItems() {
+        List<PantryItem> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PANTRY, null);
+        if (c.moveToFirst()) {
+            do {
+                PantryItem p = new PantryItem(
+                        c.getString(c.getColumnIndexOrThrow(COL_NAME)),
+                        c.getString(c.getColumnIndexOrThrow(COL_QUANTITY)),
+                        c.getString(c.getColumnIndexOrThrow(COL_UNIT)),
+                        c.getString(c.getColumnIndexOrThrow(COL_EXPIRY))
+                );
+                p.setId(c.getInt(c.getColumnIndexOrThrow(COL_ID)));
+                list.add(p);
+            } while (c.moveToNext());
+        }
+        c.close();
+        db.close();
+        return list;
     }
 
     public void updateItem(PantryItem item) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COL_NAME, item.getName().toLowerCase().trim());
-        cv.put(COL_QTY, item.getQuantity());
+        cv.put(COL_QUANTITY, item.getQuantity());
         cv.put(COL_UNIT, item.getUnit());
         cv.put(COL_EXPIRY, item.getExpiryDate());
         db.update(TABLE_PANTRY, cv, COL_ID + "=?", new String[]{String.valueOf(item.getId())});
         db.close();
     }
 
-    public ArrayList<PantryItem> getAllItems() {
-        ArrayList<PantryItem> list = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PANTRY, null);
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(new PantryItem(cursor.getInt(0), cursor.getString(1), cursor.getInt(2), cursor.getString(3), cursor.getString(4)));
-            } while (cursor.moveToNext());
-        }
-        cursor.close(); db.close();
-        return list;
-    }
-
-    public void deleteItem(int id){
+    public void deleteItem(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_PANTRY, COL_ID + "=?", new String[]{String.valueOf(id)});
         db.close();
     }
 
-    // --- STRICT MATCHING LOGIC - CORE OF ASSIGNMENT ---
-    public ArrayList<Recipe> getSuggestedRecipes() {
-        ArrayList<Recipe> suggested = new ArrayList<>();
-        ArrayList<PantryItem> pantry = getAllItems();
-
-        // Build list of pantry names lowercase for robust matching
-        ArrayList<String> pantryNames = new ArrayList<>();
-        for (PantryItem p : pantry) pantryNames.add(p.getName().toLowerCase().trim());
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_RECIPES, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Recipe r = new Recipe(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3));
-                String[] required = r.getIngredients().toLowerCase().split(",");
-                boolean allFound = true;
-                for (String req : required) {
-                    req = req.trim();
-                    // handle plural: tomato vs tomatoes
-                    if (!pantryNames.contains(req) && !pantryNames.contains(req + "s") && !pantryNames.contains(req.replace("es",""))) {
-                        boolean partial = false;
-                        for (String pName : pantryNames) { if (pName.contains(req) || req.contains(pName)) { partial = true; break; } }
-                        if (!partial) { allFound = false; break; }
-                    }
-                }
-                if (allFound) suggested.add(r);
-            } while (cursor.moveToNext());
-        }
-        cursor.close(); db.close();
-        return suggested;
+    private void addRecipeInternal(SQLiteDatabase db, String name, String ingredients, String method) {
+        ContentValues cv = new ContentValues();
+        cv.put(COL_R_NAME, name);
+        cv.put(COL_R_INGREDIENTS, ingredients);
+        cv.put(COL_R_METHOD, method);
+        db.insert(TABLE_RECIPES, null, cv);
     }
 
-    public ArrayList<Recipe> getAllRecipes() {
-        ArrayList<Recipe> list = new ArrayList<>();
+    private void seedRecipes(SQLiteDatabase db) {
+        addRecipeInternal(db, "Pap and Tomato Relish", "maize meal,tomato,onion,oil,salt,water", "1. Boil water with salt 2. Add maize meal and stir to make pap 3. Fry onion and tomato with oil to make relish 4. Serve together");
+        addRecipeInternal(db, "Pap and Wors", "maize meal,boerewors,oil,salt,water", "1. Make pap with water and salt 2. Fry wors in pan with little oil 3. Serve");
+        addRecipeInternal(db, "Fried Eggs and Bread", "egg,bread,oil,salt", "1. Heat oil 2. Fry eggs 3. Toast bread and serve with eggs");
+        addRecipeInternal(db, "Tomato and Onion Mix", "tomato,onion,oil,salt", "1. Chop tomato and onion 2. Fry onion first then add tomato 3. Add salt and cook until soft");
+        addRecipeInternal(db, "Samp and Beans", "samp,beans,salt,water,oil", "1. Soak samp and beans overnight 2. Boil together with salted water 3. Add little oil when soft");
+        addRecipeInternal(db, "Potato and Egg Fry", "potato,egg,oil,salt", "1. Peel and cut potatoes 2. Fry potatoes till soft 3. Pour beaten egg over and mix");
+        addRecipeInternal(db, "Rice and Tinned Fish", "rice,pilchards,tomato,onion,oil,salt", "1. Cook rice 2. Fry onion and tomato 3. Add pilchards and mix with rice");
+        addRecipeInternal(db, "Chicken Stew with Rice", "chicken,tomato,onion,oil,salt,rice,water", "1. Fry onion 2. Add chicken pieces and brown 3. Add tomato and salt 4. Cook and serve with rice");
+        addRecipeInternal(db, "Baked Beans and Bread", "baked beans,bread", "1. Heat baked beans in pot 2. Serve with bread");
+        addRecipeInternal(db, "Noodles with Egg", "noodles,egg,oil,salt,water", "1. Boil noodles 2. Drain 3. Fry with egg and little oil");
+        addRecipeInternal(db, "Potato Curry", "potato,onion,tomato,oil,salt,water", "1. Fry onion 2. Add potatoes and tomato 3. Add water and salt 4. Cook till soft");
+        addRecipeInternal(db, "Chakalaka", "tomato,onion,baked beans,oil,salt", "1. Fry onion 2. Add tomato 3. Add baked beans and salt 4. Cook 10 mins");
+        addRecipeInternal(db, "Egg and Tomato Sandwich", "bread,egg,tomato,salt", "1. Fry egg 2. Slice tomato 3. Put in bread with salt");
+        addRecipeInternal(db, "Pap and Cabbage", "maize meal,cabbage,onion,oil,salt,water", "1. Make pap 2. Fry cabbage with onion and oil 3. Serve together");
+        addRecipeInternal(db, "Peanut Butter Sandwich", "bread,peanut butter", "1. Spread peanut butter on bread");
+        addRecipeInternal(db, "Chicken Livers and Pap", "chicken livers,onion,tomato,oil,salt,maize meal,water", "1. Make pap 2. Fry onion and tomato 3. Add livers and cook");
+        addRecipeInternal(db, "Simple Vetkoek", "flour,oil,salt,water,sugar", "1. Mix flour, salt, sugar and water to dough 2. Make small balls 3. Deep fry in oil");
+        addRecipeInternal(db, "Beans Curry with Pap", "beans,tomato,onion,oil,salt,maize meal,water", "1. Cook beans 2. Make curry with tomato and onion 3. Serve with pap");
+        addRecipeInternal(db, "Mageu and Bread", "bread,maize meal,sugar,water", "1. Mix maize meal with water and sugar 2. Let it sour overnight 3. Serve cold with bread");
+        addRecipeInternal(db, "Fried Cabbage and Rice", "cabbage,rice,onion,oil,salt,water", "1. Cook rice 2. Fry cabbage with onion and oil 3. Mix together");
+    }
+
+    public List<Recipe> getAllRecipes() {
+        List<Recipe> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_RECIPES, null);
-        if (cursor.moveToFirst()) {
-            do { list.add(new Recipe(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3))); } while (cursor.moveToNext());
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_RECIPES, null);
+        if (c.moveToFirst()) {
+            do {
+                String name = c.getString(c.getColumnIndexOrThrow(COL_R_NAME));
+                String ingredients = c.getString(c.getColumnIndexOrThrow(COL_R_INGREDIENTS));
+                String method = c.getString(c.getColumnIndexOrThrow(COL_R_METHOD));
+                list.add(new Recipe(name, ingredients, method));
+            } while (c.moveToNext());
         }
-        cursor.close(); db.close();
+        c.close();
+        db.close();
         return list;
+    }
+
+    public List<Recipe> getSuggestedRecipes() {
+        List<PantryItem> pantryItems = getAllItems();
+        Set<String> pantrySet = new HashSet<>();
+        for (PantryItem p : pantryItems) {
+            pantrySet.add(p.getName().toLowerCase().trim());
+        }
+        List<Recipe> all = getAllRecipes();
+        List<Recipe> suggested = new ArrayList<>();
+        for (Recipe r : all) {
+            boolean canMake = true;
+            List<String> req = Arrays.asList(r.getIngredients().toLowerCase().split(","));
+            for (String ing : req) {
+                String clean = ing.trim();
+                if (!pantrySet.contains(clean)) {
+                    canMake = false;
+                    break;
+                }
+            }
+            if (canMake) suggested.add(r);
+        }
+        return suggested;
     }
 }

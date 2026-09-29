@@ -1,4 +1,5 @@
 package com.richfield.smartpantrymanager;
+
 import android.os.Bundle;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,12 +9,17 @@ public class RecipeDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_detail);
-        TextView tvName = findViewById(R.id.tvDetailName);
-        TextView tvIng = findViewById(R.id.tvDetailIngredients);
-        TextView tvSteps = findViewById(R.id.tvDetailSteps);
 
-        tvName.setText(getIntent().getStringExtra("name"));
-        tvIng.setText("Ingredients: \n" + getIntent().getStringExtra("ingredients"));
-        tvSteps.setText("Steps: \n" + getIntent().getStringExtra("steps"));
+        TextView nameTv = findViewById(R.id.detailName);
+        TextView ingTv = findViewById(R.id.detailIngredients);
+        TextView stepsTv = findViewById(R.id.detailSteps);
+
+        String name = getIntent().getStringExtra("name");
+        String ingredients = getIntent().getStringExtra("ingredients");
+        String steps = getIntent().getStringExtra("steps");
+
+        nameTv.setText(name);
+        ingTv.setText("Ingredients:\n" + ingredients);
+        stepsTv.setText("Steps:\n" + (steps != null ? steps : "No steps available"));
     }
 }

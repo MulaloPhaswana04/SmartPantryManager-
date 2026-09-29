@@ -4,19 +4,26 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
-    <TextView android:id="@+id/tvDetailName"
+
+    <TextView
+        android:id="@+id/detailName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="22sp"
-        android:textStyle="bold"/>
-    <TextView android:id="@+id/tvDetailIngredients"
+        android:textStyle="bold"
+        android:paddingBottom="12dp" />
+
+    <TextView
+        android:id="@+id/detailIngredients"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textSize="16sp"/>
-    <TextView android:id="@+id/tvDetailSteps"
+        android:textSize="16sp"
+        android:paddingBottom="12dp" />
+
+    <TextView
+        android:id="@+id/detailSteps"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textSize="16sp"/>
+        android:textSize="16sp" />
+
 </LinearLayout>

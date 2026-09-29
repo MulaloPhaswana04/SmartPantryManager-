@@ -1,18 +1,25 @@
 package com.richfield.smartpantrymanager;
 
 public class Recipe {
-    int id;
-    String name;
-    String ingredients;
-    String steps;
+    private String name;
+    private String ingredients;
+    private String steps;
 
-    public Recipe(int id, String name, String ingredients, String steps) {
-        this.id = id;
+    public Recipe(String name, String ingredients, String steps) {
         this.name = name;
         this.ingredients = ingredients;
         this.steps = steps;
     }
-    public String getName() { return name; }
-    public String getIngredients() { return ingredients; }
-    public String getSteps() { return steps; }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getIngredients() {
+        return ingredients;
+    }
+
+    public String getSteps() {
+        return steps;
+    }
 }
