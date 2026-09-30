@@ -2,7 +2,7 @@
 Android Java app that suggests recipes strictly based on leftover pantry ingredients to cut food waste.
 
 ## Database: SQLite
-Chose SQLite via SQLiteOpenHelper because it works offline, no internet needed, persists after app close/reopen, and matches module persistent data chapter. Simple CRUD for pantry items, lightweight for mobile.
+Chose SQLite via SQLiteOpenHelper over Firebase/PostgreSQL because it works fully offline (no internet needed in kitchen), persists after app close/reopen (file-based), lightweight (<1MB, fits 50MB ZIP limit), taught in module persistent data chapter, and needs no REST API. Simple CRUD for pantry items, ideal for mobile.
 
 ## Setup
 1. Open in Android Studio
@@ -17,3 +17,6 @@ Chose SQLite via SQLiteOpenHelper because it works offline, no internet needed, 
 - Strict matching: recipe only shown if ALL ingredients present
 - Recipe Detail with ingredients & steps
 - Settings with expiry alerts toggle
+
+GitHub: [SmartPantryManager](https://github.com/MulaloPhaswana04/SmartPantryManager-)
+Commits: 12 incremental commits showing build from model -> CRUD -> RecyclerView -> validation -> recipes -> strict-matching -> detail -> settings
