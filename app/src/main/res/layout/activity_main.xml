@@ -1,43 +1,160 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#F7F2FA"
+    android:padding="16dp">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerPantry"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"/>
-
+    <!-- Header: Title and item count -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnPantry"
-            android:layout_width="0dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Pantry"/>
+            android:text="My Pantry"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#1D1B20" />
 
-        <Button
-            android:id="@+id/btnSuggested"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/tvCount"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Suggested Recipes"/>
-
+            android:text="0 items"
+            android:textColor="#7D5260"
+            android:textSize="12sp"
+            android:layout_marginBottom="16dp" />
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd"
-        android:layout_width="wrap_content"
+    <!-- Input: Item name -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_margin="16dp"
-        android:contentDescription="Add"/>
+        android:layout_marginBottom="8dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxStrokeColor="#79747E">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Item name"
+            android:background="@android:color/transparent" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Input: Quantity and Unit row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeColor="#79747E">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtQuantity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Qty"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Spinner
+            android:id="@+id/spUnit"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_outline" />
+    </LinearLayout>
+
+    <!-- Input: Expiry date -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxStrokeColor="#79747E">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtExpiry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Expiry date (dd/MM/yyyy)" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Primary action: Add item -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add item"
+        android:textAllCaps="false"
+        app:cornerRadius="24dp"
+        android:backgroundTint="#65558F" />
+
+    <!-- Secondary action: Suggest recipes -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSuggest"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Suggest Recipes"
+        android:textAllCaps="false"
+        android:layout_marginTop="8dp"
+        app:cornerRadius="24dp"
+        app:strokeColor="#79747E" />
+
+    <!-- Settings gear moved below Suggest Recipes for accessible tap target -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSettings"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textAllCaps="false"
+            app:icon="@android:drawable/ic_menu_preferences"
+            app:iconPadding="8dp"
+            app:cornerRadius="20dp"
+            app:strokeColor="#79747E"
+            android:contentDescription="Open settings" />
+    </LinearLayout>
+
+    <!-- Pantry list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
 
 </LinearLayout>
